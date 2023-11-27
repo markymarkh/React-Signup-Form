@@ -1,42 +1,37 @@
 import React from "react";
 import { useFormik } from "formik";
+import formFields from "../formFields"; // Adjust the path as necessary
 
 const validate = (values) => {
   const errors = {};
-  if (!values.firstName) {
-    errors.firstName = "First Name cannot be empty";
-  } else if (values.firstName.length > 15) {
-    errors.firstName = "Must be 15 characters or less";
-  }
-
-  if (!values.lastName) {
-    errors.lastName = "Last Name cannot be empty";
-  } else if (values.lastName.length > 20) {
-    errors.lastName = "Must be 20 characters or less";
-  }
-
-  if (!values.email) {
-    errors.email = "Email is required";
-  } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
-    errors.email = "Invalid email address";
-  }
-
-  if (!values.password) {
-    errors.password = "Password is required";
-  } else if (values.password.length < 8) {
-    errors.password = "Password must not be less than 8 characters";
-  }
-
+  formFields.forEach(field => {
+    // Check if the field is required and empty
+    if (field.required && !values[field.name]) {
+      errors[field.name] = `${field.placeholder} is required`;
+    }
+    // Check for maximum length
+    else if (field.maxLength && values[field.name].length > field.maxLength) {
+      errors[field.name] = `Must be ${field.maxLength} characters or less`;
+    }
+    // Check for minimum length
+    else if (field.minLength && values[field.name].length < field.minLength) {
+      errors[field.name] = `Must be at least ${field.minLength} characters long`;
+    }
+    // Check for regex pattern (e.g., email validation)
+    else if (field.validationRegex && !field.validationRegex.test(values[field.name])) {
+      errors[field.name] = `Invalid ${field.placeholder.toLowerCase()}`;
+    }
+  });
   return errors;
 };
 
+
 function FormSection() {
   const formik = useFormik({
-    initialValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-    },
+    initialValues: formFields.reduce((values, field) => {
+      values[field.name] = field.initialValue || '';
+      return values;
+    }, {}),
     validate,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
@@ -44,71 +39,51 @@ function FormSection() {
   });
 
   return (
-    <div className="section-container">
-      <button className="trial-btn text-white cursor-pointer">
-        <span className="text-bold">Try it free 7 days</span> then
-        $20/mo.thereafter
-      </button>
-      <div className="form-container">
-        <form onSubmit={formik.handleSubmit}>
-          <input
-            type="text"
-            placeholder="First Name"
-            name="firstName"
-            id="firstName"
-            onChange={formik.handleChange}
-            value={formik.values.firstName}
-          />
-          {formik.errors.firstName ? (
-            <div className="error">{formik.errors.firstName}</div>
-          ) : null}
-          <input
-            type="text"
-            placeholder="Last Name"
-            name="lastName"
-            id="lastName"
-            onChange={formik.handleChange}
-            value={formik.values.lastName}
-          />
-          {formik.errors.lastName ? (
-            <div className="error">{formik.errors.lastName}</div>
-          ) : null}
-          <input
-            type="email"
-            placeholder="Email Address"
-            name="email"
-            id="email"
-            onChange={formik.handleChange}
-            value={formik.values.email}
-          />
-          {formik.errors.email ? (
-            <div className="error">{formik.errors.email}</div>
-          ) : null}
-          <input
-            type="password"
-            placeholder="Password"
-            name="password"
-            id="password"
-            onChange={formik.handleChange}
-            value={formik.values.password}
-          />
-          {formik.errors.password ? (
-            <div className="error">{formik.errors.password}</div>
-          ) : null}
-          <button
-            type="submit"
-            className="submit-btn text-white cursor-pointer"
-          >
-            CLAIM YOUR FREE TRIAL
-          </button>
-        </form>
-        <p className="terms-text">
-          By clicking the button, you are agreeing to our&nbsp;
-          <a href="nothing" className="terms-link">
-            Terms and Services
-          </a>
-        </p>
-      </div>
+    <div style={{ padding: '20px' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Supervised Consumption Sites Existing User Sign In</h2>
+      <form onSubmit={formik.handleSubmit} style={{ margin: '0 auto', maxWidth: '800px' }}>
+        {formFields.map(field => (
+          <div key={field.name} style={{ marginBottom: '15px' }}>
+            <label htmlFor={field.name} style={{ display: 'block', marginBottom: '5px' }}>{field.placeholder}</label>
+            <input
+              type={field.type || "text"}
+              placeholder={field.placeholder}
+              name={field.name}
+              id={field.name}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values[field.name]}
+              style={{
+                width: '100%', // Make input width 100% of the form container
+                padding: '10px',
+                boxSizing: 'border-box', // Include padding in width calculation
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                display: 'block' // Ensure input is a block-level element
+              }}
+            />
+            {formik.touched[field.name] && formik.errors[field.name] && (
+              <div className="error" style={{ color: 'red', marginTop: '5px' }}>{formik.errors[field.name]}</div>
+            )}
+          </div>
+        ))}
+        <button
+          type="submit"
+          className="submit-btn"
+          style={{
+            width: '100%', // Make button width 100% of the form container
+            padding: '15px',
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+        >
+          Submit
+        </button>
+      </form>
     </div>
   );
 }

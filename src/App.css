@@ -17,8 +17,7 @@ body {
   padding: 20px;
   height: 100vh;
 
-  background-image: url(./assets/images/bg-intro-mobile.png);
-  background-color: hsl(0, 100%, 74%);
+  background-color: hsl(0, 0%, 100%);
 }
 
 .app {
